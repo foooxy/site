@@ -1,0 +1,16 @@
+{% extends 'extends/main.html' %}
+{% block main %}
+	<div class="page-header">
+		<h3>{{name}}</h3>
+		<ul class="list-group">
+			{% for child in children %}
+			<li class="list-group-item"><a href='/category/{{child.alias}}'>{{child.name}}</a></li>	
+			{% endfor %}
+		</ul>
+		<ul class="list-group">
+		{% for item in items %}
+			<li class="list-group-item"><a href='/items/{{item.alias}}'>{{item.name}}</a></li>	
+			{% endfor %}
+		</ul>
+	</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'extends/main.html' %}
+{% block main %}
+	<div class="container-fluid">
+	{% for cat in categories %}
+		<div class="panel panel-default">
+			<div class="panel-heading"><a href="/category/{{cat.alias}}">{{cat.name}}</a></div>
+			<div class="row panel-body">
+				{% for child in cat.children %}
+					<div class="col-xs-6 col-md-3">
+						<a href="#" class="thumbnail">
+							<img src="" alt="">
+							<div class="caption">
+								<p>{{child.name}}</p>
+							</div>
+ 						</a>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	{% endfor %}
+	</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block main %}
+<div class="container">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Товар</th>
+				<th>Категория</th>
+				<th>Параметр</th>
+				<th>Значение</th>
+				<th>Единица измерения</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in rows %}
+				<tr>
+					<th>{{ row.id }}</th>
+					<td>{{ row.prodName }}</td>
+					<td>{{ row.catName }}</td>
+					<td>{{ row.paramName }}</td>
+					<td>{{ row.value }}</td>
+					<td>{{ row.type }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+<div class="row">
+	<form method="post">
+		<div class="col-lg-2">
+			<div class="form-group">
+				<select name="prodName" class="form-control">
+					{% for rowP in rowsP %}
+						<option value={{ rowP.id }}>{{ rowP.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-lg-2">
+			<select id="catSelect" name="catName" class="form-control">
+					{% for rowC in rowsC %}
+						<option value={{ rowC.id }}>{{ rowC.name }}</option>
+					{% endfor %}
+			</select>
+		</div>
+		<div class="col-lg-2">
+			<select id="paramSelect" name="paramName" class="form-control">
+			</select>
+		</div>
+		<div class="col-lg-2">
+			<div class="form-group">
+				<input name="value" type="text" class="form-control" placeholder="Значение">
+			</div>
+		</div>
+		<div class="col-lg-2">
+			<div class="form-group">
+				<input type="submit" class="btn btn-default" value="Добавить">
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}

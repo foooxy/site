@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block main %}
+<div class="container">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Параметр</th>
+				<th>Единицы измерения</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in rows %}
+				<tr>
+					<th>{{ row.id }}</th>
+					<td>{{ row.name }}</td>
+					<td>{{ row.type }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+<div class="row">
+	<form action='index.php' method="post">
+		<div class="col-lg-2">
+			<div class="form-group">
+				<input name="name" type="text" class="form-control" placeholder="Параметр">
+			</div>
+		</div>
+		<div class="col-lg-2">
+			<div class="form-group">
+				<input name="type" type="text" class="form-control" placeholder="Единица измерения">
+			</div>
+		</div>
+		<div class="col-lg-2">
+			<div class="form-group">
+				<input type="submit" class="btn btn-default" value="Добавить">
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}

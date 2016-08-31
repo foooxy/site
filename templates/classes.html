@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block main %}
+<div class="container">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Категория</th>
+				<th>Параметр</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in rows %}
+				<tr>
+					<th>{{ row.id }}</th>
+					<td>{{ row.catName }}</td>
+					<td>{{ row.paramName }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+<div class="row">
+	<form id="productForm" method="post">
+		<div class="col-lg-2">
+			<div class="form-group">
+				<select name="name" class="form-control">
+					{% for param in params %}
+						<option value = {{ param.id }}>{{ param.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-lg-2">
+			<div class="form-group">
+				<select name="param" class="form-control">
+					{% for cat in cats %}
+						<option value = {{ cat.id }}>{{ cat.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-lg-2">
+			<div class="form-group">
+				<input type="submit" class="btn btn-default" value="Добавить!!!!">
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}
