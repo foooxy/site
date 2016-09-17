@@ -64,6 +64,19 @@
 			'children'=>$children,
 			'items'=>$items));
 	});
+	$klein->respond('GET', '/items/[:item]', function($request) use ($twig){
+		$query = "SELECT * FROM productparams AS pp
+				  LEFT JOIN products AS p
+				  ON pp.product = p.id
+				  WHERE p.alias = ".$request->item;
+		$res = mysql_query($query);
+		while($row = mysql_fetch_array($res)){
+			$rows[] = $row;
+		}
+		echo $twig->render('item.html', array(
+			'title'=>'Item',
+			'rows'=>$rows;));
+	});
 	$klein->respond('GET', '/admin', function() use ($twig){
 		
 	});

@@ -8,9 +8,11 @@
 			{% endfor %}
 		</ul>
 		<ul class="list-group">
-		{% for item in items %}
-			<li class="list-group-item"><a href='/items/{{item.alias}}'>{{item.name}}</a></li>	
+		{% if items is defined %}
+			{% for item in items %}
+				<li class="list-group-item"><a href='/items/{{item.alias}}'>{{item.name}}</a></li>	
 			{% endfor %}
+		{% endif %}
 		</ul>
 	</div>
 {% endblock %}
