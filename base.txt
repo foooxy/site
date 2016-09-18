@@ -1,0 +1,27 @@
+categories
+catnames
+params
+productparams
+products
+
+
+
+productparams
+	id
+	cat -> categories
+				id
+				cat -> catnames
+							id
+							name
+							alias
+							parent
+				param -> params
+							id
+							name
+							type
+
+	product -> products
+				id
+				name
+				alias
+	value

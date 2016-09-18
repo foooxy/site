@@ -65,18 +65,28 @@
 			'items'=>$items));
 	});
 	$klein->respond('GET', '/items/[:item]', function($request) use ($twig){
-		$query = "SELECT * FROM productparams AS pp
-				  LEFT JOIN products AS p
-				  ON pp.product = p.id
-				  WHERE p.alias = ".$request->item;
+		$query = "SELECT p.name AS productName, params.name, params.type, pp.value FROM products AS p
+				LEFT JOIN productparams AS pp
+				ON pp.product = p.id
+				LEFT JOIN categories AS c
+				ON pp.cat = c.id
+				LEFT JOIN params
+				ON c.param = params.id
+				WHERE p.alias = ".$request->item;
 		$res = mysql_query($query);
 		while($row = mysql_fetch_array($res)){
 			$rows[] = $row;
 		}
 		echo $twig->render('item.html', array(
 			'title'=>'Item',
-			'rows'=>$rows;));
+			'name'=>$rows[0].productName,
+			'rows'=>$rows));
 	});
+
+	$klein->respond('GET', '/item', function() use ($twig){
+		echo $twig->render('item_test.html');
+	});
+
 	$klein->respond('GET', '/admin', function() use ($twig){
 		
 	});
