@@ -12,25 +12,18 @@
 
 	$klein = new \Klein\Klein();
 	$klein->respond('GET', '/', function() use ($twig){
-		$query = "SELECT id, name, alias 
+		$query = "SELECT name, alias 
 				FROM catnames
 				WHERE parent IS NULL";
 		$res = mysql_query($query);
 		while ($row = mysql_fetch_array($res)){
-			$query = "SELECT name
-					 FROM catnames
-					 WHERE parent = ".$row['id'];
-			$result = mysql_query($query);
-			while($child = mysql_fetch_array($result)){
-				$children[] = $child;
-			}
-			$arr = array('name'=>$row['name'], 'alias'=>$row['alias'], 'children'=>$children);
-			$rows[] = $arr;
-			$children = array();
+			$rows[] = $row;
 		}
 
-		echo $twig->render('index.html', array('title'=>'Главня',
-			'categories'=>$rows));
+		echo $twig->render('index.html', array(
+			'title'=>'Главная',
+			'categories'=>$rows,
+			'quantity'=>count($rows) / 3));
 	});
 	$klein->respond('GET', '/category/[:catname]', function($request) use ($twig){
 		$query = "SELECT id, name FROM catnames WHERE alias = '".$request->catname."'";
@@ -43,8 +36,9 @@
 			$children[] = $child;
 		}
 
+		$items = array();
 		if(!isset($children)){
-			$query = "SELECT p.name FROM products AS p
+			$query = "SELECT p.name, p.alias FROM products AS p
 					  LEFT JOIN productparams AS pp
 					  ON pp.product = p.id
 					  LEFT JOIN categories AS cat 
@@ -72,14 +66,16 @@
 				ON pp.cat = c.id
 				LEFT JOIN params
 				ON c.param = params.id
-				WHERE p.alias = ".$request->item;
+				WHERE p.alias = '".$request->item."'";
 		$res = mysql_query($query);
+		$productName = '';
 		while($row = mysql_fetch_array($res)){
+			$productName = $row['productName'];
 			$rows[] = $row;
 		}
 		echo $twig->render('item.html', array(
-			'title'=>'Item',
-			'name'=>$rows[0].productName,
+			'title'=>$productName,
+			'name'=>$productName,
 			'rows'=>$rows));
 	});
 
