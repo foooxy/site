@@ -3,18 +3,37 @@
 	<div class="container">
 		<div class="page-header">
 			<h3>{{name}}</h3>
-			<ul class="list-group">
-				{% for child in children %}
-				<li class="list-group-item"><a href='/category/{{child.alias}}'>{{child.name}}</a></li>	
-				{% endfor %}
-			</ul>
-			<ul class="list-group">
+		</div>
+		{% if children|length > 0 %}
+			{% set iter = 1 %}
+			{% for child in children %}
+				{% if iter == 1 %}
+					<div class="row">
+				{% endif %}
+				{% set iter = iter + 1 %}
+				<div class="col-md-3">
+					<div class="thumbnail">
+						<a href="/category/{{child.alias}}">
+							<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjQyIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDI0MiAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzEwMCV4MjAwCkNyZWF0ZWQgd2l0aCBIb2xkZXIuanMgMi42LjAuCkxlYXJuIG1vcmUgYXQgaHR0cDovL2hvbGRlcmpzLmNvbQooYykgMjAxMi0yMDE1IEl2YW4gTWFsb3BpbnNreSAtIGh0dHA6Ly9pbXNreS5jbwotLT48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwhW0NEQVRBWyNob2xkZXJfMTU3NDc5ZjAwM2IgdGV4dCB7IGZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToxMnB0IH0gXV0+PC9zdHlsZT48L2RlZnM+PGcgaWQ9ImhvbGRlcl8xNTc0NzlmMDAzYiI+PHJlY3Qgd2lkdGg9IjI0MiIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFRUVFRUUiLz48Zz48dGV4dCB4PSI4OS44NTkzNzUiIHk9IjEwNS4xIj4yNDJ4MjAwPC90ZXh0PjwvZz48L2c+PC9zdmc+" class="img-responsive">
+						</a>
+						<div class="caption">
+							<h4>{{child.name}}</h4>
+						</div>
+					</div>
+				</div>
+				{% if iter == 3 %}
+					</div>
+				{% set iter = 1 %}
+				{% endif %}
+			{% endfor %}
+		{% else %}
+		<ul class="list-group">
 			{% if items is defined %}
 				{% for item in items %}
 					<li class="list-group-item"><a href='/items/{{item.alias}}'>{{item.name}}</a></li>	
 				{% endfor %}
 			{% endif %}
 			</ul>
-		</div>
+		{% endif %}
 	</div>
 {% endblock %}

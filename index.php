@@ -79,12 +79,57 @@
 			'rows'=>$rows));
 	});
 
-	$klein->respond('GET', '/item', function() use ($twig){
-		echo $twig->render('item_test.html');
-	});
-
 	$klein->respond('GET', '/admin', function() use ($twig){
-		
+		$query="SELECT p.id, pp.value, p.name AS productName, cn.name AS category, params.name, params.type
+				FROM productparams AS pp
+				LEFT JOIN products AS p
+				ON pp.product = p.id
+				LEFT JOIN categories AS cat
+				ON pp.cat = cat.id
+				LEFT JOIN catnames AS cn
+				ON cat.cat = cn.id
+				LEFT JOIN params
+				ON cat.param = params.id
+				ORDER BY pp.id";
+		$res = mysql_query($query);
+		$currentId = -1;
+		$items = array();
+		$params = array();
+		$productName = '';
+		$category = '';
+		while($row = mysql_fetch_array($res)){
+			$productName = $row['productName'];
+			$category = $row['category'];
+			if ($currentId != $row['id']){
+				$currentId = $row['id'];
+				if(count($params) > 0){
+					$items[] = array(
+						'id'=>$row['id'],
+						'productName'=>$row['productName'],
+						'category'=>$row['category'],
+						'params'=>$params
+						);
+				}
+			}
+			$params[] = array(
+						'name'=>$row['name'],
+						'type'=>$row['type'],
+						'value'=>$row['value']
+				);
+		}
+		if(count($params) > 0){
+			$items[] = array(
+				'id'=>$currentId,
+				'productName'=>$productName,
+				'category'=>$category,
+				'params'=>$params
+				);
+		}
+
+
+		echo $twig->render('admin.html', array(
+			'items'=>$items
+			));	
 	});
 	$klein->dispatch();
 ?>

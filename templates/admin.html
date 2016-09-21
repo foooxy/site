@@ -1,0 +1,39 @@
+{% extends 'extends/main.html' %}
+{% block main %}
+	<div clas="row">
+		<div class="col-md-2">
+			<ul class="nav nav-pills nav-stacked">
+				<li role="presentation" class="active"><a href="#">Продукты</a></li>
+				<li role="presentation"><a href="#">Категории</a></li>
+				<li role="presentation"><a href="#">Параметры</a></li>
+			</ul>
+		</div>
+		<div class="col-md-10">
+			<table class="table table-condensed" style="border-collapse:collapse;">
+				<thead>
+					<tr>
+						<th>Продукт<th>
+						<th>Категория</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for item in items%}
+					<tr  data-toggle="collapse" data-target="#target{{item.id}}" class="accordion-toggle">
+						<td>{{item.productName}}</td>
+						<td>{{item.category}}</td>
+					</tr>
+						{% for param in item.params %}
+							<tr>
+								<td  colspan="6" class="hiddenRow">
+									<div  class="accordian-body collapse" id="target{{item.id}}">
+									{{param.name}}
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+{% endblock %}
