@@ -12,22 +12,20 @@
 			<table class="table table-condensed" style="border-collapse:collapse;">
 				<thead>
 					<tr>
-						<th>Продукт<th>
+						<th>Продукт</th>
 						<th>Категория</th>
 					</tr>
 				</thead>
 				<tbody>
 				{% for item in items%}
-					<tr  data-toggle="collapse" data-target="#target{{item.id}}" class="accordion-toggle">
+					 <tr data-toggle="collapse" data-target="#demo1" class="accordion-toggle">
 						<td>{{item.productName}}</td>
 						<td>{{item.category}}</td>
 					</tr>
 						{% for param in item.params %}
 							<tr>
-								<td  colspan="6" class="hiddenRow">
-									<div  class="accordian-body collapse" id="target{{item.id}}">
-									{{param.name}}
-									</div>
+								<td colspan="6" class="hiddenRow">
+									<div class="accordian-body collapse" id="demo1">{{param.name}}</div>
 								</td>
 							</tr>
 						{% endfor %}
