@@ -8,30 +8,54 @@
 				<li role="presentation"><a href="#">Параметры</a></li>
 			</ul>
 		</div>
-		<div class="col-md-10">
-			<table class="table table-condensed" style="border-collapse:collapse;">
-				<thead>
-					<tr>
-						<th>Продукт</th>
-						<th>Категория</th>
-					</tr>
-				</thead>
-				<tbody>
-				{% for item in items%}
-					 <tr data-toggle="collapse" data-target="#demo1" class="accordion-toggle">
-						<td>{{item.productName}}</td>
-						<td>{{item.category}}</td>
-					</tr>
-						{% for param in item.params %}
-							<tr>
-								<td colspan="6" class="hiddenRow">
-									<div class="accordian-body collapse" id="demo1">{{param.name}}</div>
-								</td>
-							</tr>
-						{% endfor %}
-				{% endfor %}
-				</tbody>
-			</table>
+		<div class="col-md-10 productsTable">
+			<button class="btn btn-info btn-sm" id='addProductBtn' type="button" data-toggle="modal" data-target="#addProduct" name="edit">Добавить товар</button>
+			{% include 'adminReload.html' %}
+		</div>
+	</div>
+	<div id="addProduct" class="modal fade" role='dialog'>
+		<div class="modal-dialog" role='document'>
+			<div class="modal-content">
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal' aria-lable='Закрыть'><span aria-hidden='true'>&times;</span></button>
+					<h4 class='modal-title'>Редактор продукта</h4>
+				</div>
+				<div id="addProductResult" class='modal-body'></div>
+				<div class='modal-footer'>
+					<button type='button' class='btn btn-default' data-dismiss='modal'>Закрыть</button>
+					<button type='button' class='btn btn-primary' id='submitAddProduct'>Сохранить</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="editProduct" class="modal fade" role='dialog'>
+		<div class="modal-dialog" role='document'>
+			<div class="modal-content">
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal' aria-lable='Закрыть'><span aria-hidden='true'>&times;</span></button>
+					<h4 class='modal-title'>Редактор продукта</h4>
+				</div>
+				<div id="productResult" class='modal-body'></div>
+				<div class='modal-footer'>
+					<button type='button' class='btn btn-default' data-dismiss='modal'>Закрыть</button>
+					<button type='button' class='btn btn-primary' id='submitProduct'>Сохранить</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="editParam" class="modal fade" role='dialog'>
+		<div class="modal-dialog" role='document'>
+			<div class="modal-content">
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal' aria-lable='Закрыть'><span aria-hidden='true'>&times;</span></button>
+					<h4 class='modal-title'>Редактор параметра</h4>
+				</div>
+				<div id="paramResult" class='modal-body'></div>
+				<div class='modal-footer'>
+					<button type='button' class='btn btn-default' data-dismiss='modal'>Закрыть</button>
+					<button type='button' class='btn btn-primary' id='submitParam'>Сохранить</button>
+				</div>
+			</div>
 		</div>
 	</div>
 {% endblock %}

@@ -1,0 +1,16 @@
+<div class='form-group'>
+	<lable for='productName'>Название продукта:</lable>
+	<input type='text' class='form-control' id='productName' name='productName' value='{{productName}}'>
+</div>
+<div class='form-group'>
+	<lable for='alias'>Алиас:</lable>
+	<input type='text' class='form-control' id='alias' name='alias' value='{{alias}}'>
+</div>
+<div class='form-group'>
+	<lable for='category'>Категория:</lable>
+	<select class='form-control' id='category' name='category'>
+	{% for cat in cats %}
+		<option value='{{cat.alias}}' {% if cat.selected == true %} selected {% endif %}>{{cat.name}}</option>
+	{% endfor %}
+	</select>
+</div>
