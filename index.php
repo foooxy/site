@@ -80,17 +80,7 @@
 	});
 
 	$klein->respond('GET', '/admin', function($request) use ($twig){
-		$query="SELECT p.id, pp.id AS ppId, pp.value, p.name AS productName, p.alias, cn.name AS category, params.name, params.type
-				FROM productparams AS pp
-				LEFT JOIN products AS p
-				ON pp.product = p.id
-				LEFT JOIN categories AS cat
-				ON pp.cat = cat.id
-				LEFT JOIN catnames AS cn
-				ON cat.cat = cn.id
-				LEFT JOIN params
-				ON cat.param = params.id
-				ORDER BY pp.id";
+		$query="SELECT p.id, pp.id AS ppId, pp.value, p.name AS productName, p.alias, cn.name AS category, params.name, params.type FROM productparams AS pp LEFT JOIN products AS p ON pp.product = p.id LEFT JOIN categories AS cat ON pp.cat = cat.id LEFT JOIN catnames AS cn ON cat.cat = cn.id LEFT JOIN params ON cat.param = params.id ORDER BY pp.id";
 		$res = mysql_query($query);
 		$items = array();
 		$params = array();
@@ -98,28 +88,46 @@
 		$category = '';
 		$alias = '';
 		$paramId = -1;
-		while($row = mysql_fetch_array($res)){
-			$productName = $row['productName'];
-			$category = $row['category'];
-			$alias = $row['alias'];
-			$paramId = $row['ppId'];
+		$current = -1;
+		$first = true;
+
+		while($row = mysql_fetch_array($res)){			
+			if($first){
+				$first = false;
+				$currentId = $row['id'];
+			}
+
+			if($currentId != $row['id']){
+				$currentId = $row['id'];
+				$items[] = array(
+					'id'=>$productId,
+					'productName'=>$productName,
+					'category'=>$category,
+					'alias'=>$alias,
+					'params'=>$params
+				);
+				$params = array();
+			}
 
 			$params[] = array(
 						'id'=>$row['ppId'],
 						'name'=>$row['name'],
 						'type'=>$row['type'],
 						'value'=>$row['value']
-				);
+						);
+			$productId = $row['id'];
+			$productName = $row['productName'];
+			$category = $row['category'];
+			$alias = $row['alias'];
+			$paramId = $row['ppId'];
 		}
-		if(count($params) > 0){
-			$items[] = array(
-				'id'=>$paramId,
-				'productName'=>$productName,
-				'category'=>$category,
-				'alias'=>$alias,
-				'params'=>$params
+		$items[] = array(
+					'id'=>$productId,
+					'productName'=>$productName,
+					'category'=>$category,
+					'alias'=>$alias,
+					'params'=>$params
 				);
-		}
 
 		if($request->param('reload', -1) == -1){
 			echo $twig->render('admin.html', array(
@@ -163,8 +171,23 @@
 				));
 		} else {
 			$query = "INSERT INTO products (name, alias) VALUES ('".$request->param('pn')."', '".$request->param('a')."')";
+			mysql_query($query);
+			$product = mysql_insert_id();
+			$query = "SELECT id FROM catnames WHERE alias='".$request->param('c')."' LIMIT 1";
 			$res = mysql_query($query);
-			echo mysql_insert_id();
+			$cat = mysql_fetch_array($res);
+
+			$query = "INSERT INTO categories (cat, param) 
+			SELECT '".$cat['id']."', id 
+			FROM products 
+			LIMIT 1";
+
+			mysql_query($query);
+			$category = mysql_insert_id();
+			echo $category;
+
+			$query = "INSERT INTO productparams (cat, value, product) VALUES ('".$category."', '0', '".$product."')";
+			$res = mysql_query($query);
 		}
 	});
 
