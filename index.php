@@ -3,17 +3,10 @@
 	$loader = new Twig_Loader_Filesystem('./templates');
 	$twig = new Twig_Environment($loader, array());
 
-	/*$host = "localhost";
+	$host = "localhost";
 	$user = "root";
 	$pass = "";
-	$db = "main";*/
-
-	$url = parse_url(getenv("CLEARDB_DATABASE_URL"));
-
-	$host = $url["host"];
-	$user = $url["user"];
-	$pass = $url["pass"];
-	$db = substr($url["path"], 1);
+	$db = "main";
 
 	mysql_connect($host, $user, $pass) or die(mysql_error());
 	mysql_select_db($db) or die(mysql_error());
