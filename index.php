@@ -3,10 +3,18 @@
 	$loader = new Twig_Loader_Filesystem('./templates');
 	$twig = new Twig_Environment($loader, array());
 
-	$host = "localhost";
+	/*$host = "localhost";
 	$user = "root";
 	$pass = "";
-	$db = "main";
+	$db = "main";*/
+
+	$url = parse_url(getenv("CLEARDB_DATABASE_URL"));
+
+	$host = $url["host"];
+	$user = $url["user"];
+	$pass = $url["pass"];
+	$db = substr($url["path"], 1);
+
 	mysql_connect($host, $user, $pass) or die(mysql_error());
 	mysql_select_db($db) or die(mysql_error());
 
@@ -191,6 +199,37 @@
 		}
 	});
 
+	$klein->respond('GET', '/admin/products/delProduct', function($request){
+
+		$query = "SELECT id, cat FROM productparams WHERE product=".$request->param('id');
+		$res = mysql_query($query);
+		$ppIds = '';
+		$cIds = array();
+		while($row = mysql_fetch_array($res)){
+			$ppIds .= $row['id'].', ';
+			$cIds[] = $row['cat'];
+		}
+		$ppIds = substr($ppIds, 0, -2);
+		$cIds = array_unique($cIds);
+		$cIdsS = '';
+		for ($i = 0; $i < count($cIds); $i++){
+			$cIdsS .= $cIds[$i];
+			if ($i < count($cIds) - 1){
+				$cIdsS .= ', ';	
+			}
+		}
+
+		echo $ppIds;
+		$query = "DELETE FROM categories WHERE id IN (".$cIdsS.")";
+		mysql_query($query);
+		$query = "DELETE FROM productparams WHERE id IN (".$ppIds.")";
+		mysql_query($query);
+		$query = "DELETE FROM products WHERE id=".$request->param('id');
+		mysql_query($query);
+
+
+	});
+
 	$klein->respond('GET', '/admin/products/editProduct', function($request) use ($twig){
 		if($request->param('pn', -1) == -1){
 			$query = "SELECT p.name AS productName, p.alias, cn.alias AS catAlias 
@@ -241,6 +280,55 @@
 		$query = "UPDATE productparams AS pp, params AS p, categories AS c SET p.name = '".$request->param('p')."', p.type = '".$request->param('t')."', pp.value = '".$request->param('v')."' WHERE pp.cat = c.id AND c.param = p.id AND pp.id=".$request->param('id');
 		$res = mysql_query($query);
 		echo $res;	
+	});
+
+	$klein->respond('GET', '/admin/cats', function() use ($twig){
+		$query = "SELECT cn.name AS cName, cn.alias, p.name AS pName, cn.id AS cId, p.id AS pId, p.type
+				  FROM categories AS c
+				  LEFT JOIN catnames AS cn
+				  ON c.cat = cn.id
+				  LEFT JOIN params AS p
+				  ON c.param = p.id
+				  ORDER BY cId";
+		$res = mysql_query($query);
+		$cats = array();
+		$params = array();
+		$currentId = -1;
+		$first = true;
+
+		while($row = mysql_fetch_array($res)){
+			if($first){
+				$first = false;
+				$currentId = $row['cId'];
+			}
+			if($currentId != $row['cId']){
+				$currentId != $row['cId'];
+				$cats[] = array(
+					'id'=>$cId,
+					'name'=>$cName,
+					'alias'=>$cAlias,
+					'params'=>$params
+					);
+				$params = array();
+			}
+			$params[] = array(
+					'id'=>$row['pId'],
+					'name'=>$row['pName'],
+					'alias'=>$row['type']
+				);
+			$cId = $row['cId'];
+			$cName = $row['cName'];
+			$cAlias = $row['alias'];
+		}
+		$cats[] = array(
+					'id'=>$cId,
+					'name'=>$cName,
+					'alias'=>$cAlias,
+					'params'=>$params
+					);
+		echo $twig->render('adminCat.html', array(
+			'items'=>$cats
+			));	
 	});
 	$klein->dispatch();
 ?>

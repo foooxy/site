@@ -1,0 +1,15 @@
+{% extends 'extends/main.html' %}
+{% block main %}
+	<div clas="row">
+		<div class="col-md-2">
+			<ul class="nav nav-pills nav-stacked">
+				<li role="presentation"><a href="/admin">Продукты</a></li>
+				<li role="presentation" class="active"><a href="/admin/cats">Категории</a></li>
+				<li role="presentation"><a href="#">Параметры</a></li>
+			</ul>
+		</div>
+		<div class="col-md-10 productsTable">
+			{% include 'adminCatReload.html' %}
+		</div>
+	</div>
+{% endblock %}

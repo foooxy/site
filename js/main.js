@@ -12,7 +12,6 @@ $(document).ready(function(){
 			+ '&a=' + alias
 			+ '&c=' + category,
 		function(data){
-			alert(data);
 			if(data > 0){
 				$.ajax({
 					url: '/admin?reload=1',
@@ -23,6 +22,21 @@ $(document).ready(function(){
 				});
 			}
 			$('#addProduct').modal('hide');
+		});
+	});
+
+	$('.delProductBtn').click(function(e){
+		var id = $(e.currentTarget).data('whatever');
+		alert(id);
+		$.get('/admin/products/delProduct?id=' + id, function(data){
+			alert(data);
+			$.ajax({
+				url: '/admin?reload=1',
+				cache: false,
+				success: function(data){
+					$('.productsTable').html(data);
+				}
+			});	
 		});
 	});
 
