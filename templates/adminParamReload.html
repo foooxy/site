@@ -1,0 +1,20 @@
+<button class="btn btn-info btn-sm" id='addParamBtn' type="button" data-toggle="modal" data-target="#paramsAddParam" name="add">Добавить параметр</button>
+<table class="table table-condensed">
+	<thead>
+		<tr>
+			<th>Параметр</th>
+			<th>Тип</th>
+			<th colspan="2">Управление</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for item in items%}
+		<tr>
+			<td>{{item.name}}</td>
+			<td>{{item.type}}</td>
+			<td><button class="btn btn-info btn-sm" id='editProductBtn' type="button" data-toggle="modal" data-target="#paramsEditParam" name="edit" data-whatever='{{item.id}}' data-selected='false'>Редактировать</button></td>
+			<td><button class="btn btn-info btn-sm delProductBtn" type="button" name="delete" data-whatever='{{item.id}}'>Удалить</button></td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>

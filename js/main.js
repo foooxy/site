@@ -27,9 +27,7 @@ $(document).ready(function(){
 
 	$('.delProductBtn').click(function(e){
 		var id = $(e.currentTarget).data('whatever');
-		alert(id);
 		$.get('/admin/products/delProduct?id=' + id, function(data){
-			alert(data);
 			$.ajax({
 				url: '/admin?reload=1',
 				cache: false,
@@ -81,6 +79,8 @@ $(document).ready(function(){
 		button.attr('data-selected', 'true');
 		$.get('/admin/products/editParam/' + id, function(data){
 			$('#paramResult').html(data);
+			var type = $('#paramResult #param option:selected').data('type');
+			$('#paramResult #type').val(type);
 		});
 	});
 	$('#editParam').on('hidden.bs.modal', function(event){
@@ -89,9 +89,9 @@ $(document).ready(function(){
 	});
 	$('#submitParam').click(function(e){
 		var id = $('#editParamBtn[data-selected = true]').data('whatever');
-		var param = $('#param').val();
-		var value = $('#value').val();
-		var type = $('#type').val();
+		var param = $('#paramResult #param').val();
+		var value = $('#paramResult #value').val();
+		var type = $('#paramResult #type').val();
 
 		$.get('/admin/products/editParam?id=' + id
 			+ '&p=' + param
@@ -108,6 +108,77 @@ $(document).ready(function(){
 				});
 			}
 			$('#editParam').modal('hide');	
+		});
+	});
+	$('#paramResult #param').change(function(){
+		var type = $('#paramResult #param option:selected').data('type');
+		$('#paramResult #type').val(type);	
+	});
+
+	$('#addParam').on('shown.bs.modal', function(event){
+		var button = $(event.relatedTarget);
+		button.attr('data-selected', 'true');
+		var id = button.data('whatever');
+		$.get('/admin/products/addParam?id=' + id, function(data){
+			$('#addParamResult').html(data);
+			var type = $('#addParamResult #param option:selected').data('type');
+			$('#addParamResult #type').val(type);
+		});
+	});
+	$('#addParam').on('hidden.bs.modal', function(e){
+		$('.addParamBtn[data-selected = true]').attr('data-selected', 'false');
+	});
+	$('#submitAddParam').click(function(e){
+		var id = $('.addParamBtn[data-selected = true]').data('whatever');
+		var param = $('#addParamResult #param').val();
+		var value = $('#addParamResult #value').val();
+		var type = $('#addParamResult #type').val();
+
+		$.get('/admin/products/addParam?id=' + id
+			+ '&p=' + param
+			+ '&v=' + value
+			+ '&t=' + type
+			, function(data){
+			$.ajax({
+				url: '/admin?reload=1',
+				cache: false,
+				success: function(data){
+					$('.productsTable').html(data);
+				}
+			});
+		});
+	});
+
+	$('.delParamBtn').click(function(event){
+		var id = $(event.currentTarget).data('whatever');
+		$.get('/admin/products/delParam?id=' + id, function(){
+			$.ajax({
+				url: '/admin?reload=1',
+				cache: false,
+				success: function(data){
+					$('.productsTable').html(data);
+				}
+			});
+		});
+	});
+
+	$('#paramsAddParam').on('shown.bs.modal', function(event){
+		$.get('/admin/params/addParam', function(data){
+			$('#paramsAddParam #paramsAddParamResult').html(data);
+		});
+	});
+	$('#paramsSubmitAddParam').click(function(){
+		var name = $('#paramsAddParam #paramsAddParamResult #param').val();
+		var type = $('#paramsAddParam #paramsAddParamResult #type').val();
+		$('#paramsAddParam').modal('hide');
+		$.get('/admin/params/addParam?n=' + name + '&t=' + type, function(data){
+			$.ajax({
+				url: '/admin/params?reload=1',
+				cache: false,
+				success: function(data){
+					$('.productsTable').html(data);
+				}
+			});
 		});
 	});
 });

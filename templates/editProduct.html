@@ -10,7 +10,7 @@
 	<lable for='category'>Категория:</lable>
 	<select class='form-control' id='category' name='category'>
 	{% for cat in cats %}
-		<option value='{{cat.alias}}' {% if cat.selected == true %} selected {% endif %}>{{cat.name}}</option>
+		<option value='{{cat.alias}}' {% if cat.selected %} selected {% endif %}>{{cat.name}}</option>
 	{% endfor %}
 	</select>
 </div>

@@ -1,6 +1,10 @@
 <div class='form-group'>
 	<lable for='param'>Параметр:</lable>
-	<input type='text' class='form-control' id='param' name='param' value='{{param}}'>
+	<select class="form-control" id="param" name="param">
+		{% for param in params %}
+			<option value="{{param.id}}" {% if param.selected %} selected {% endif %} data-type="{{param.type}}">{{param.name}}</option>
+		{% endfor %}
+	</select>
 </div>
 <div class='form-group'>
 	<lable for='value'>Значение:</lable>
@@ -8,5 +12,5 @@
 </div>
 <div class='form-group'>
 	<lable for='type'>Тип:</lable>
-	<input type='text' class='form-control' id='type' name='type' value='{{type}}'>
+	<input type='text' class='form-control' id='type' name='type' readonly>
 </div>

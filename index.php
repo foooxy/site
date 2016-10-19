@@ -83,52 +83,57 @@
 	$klein->respond('GET', '/admin', function($request) use ($twig){
 		$query="SELECT p.id, pp.id AS ppId, pp.value, p.name AS productName, p.alias, cn.name AS category, params.name, params.type FROM productparams AS pp LEFT JOIN products AS p ON pp.product = p.id LEFT JOIN categories AS cat ON pp.cat = cat.id LEFT JOIN catnames AS cn ON cat.cat = cn.id LEFT JOIN params ON cat.param = params.id ORDER BY pp.id";
 		$res = mysql_query($query);
-		$items = array();
-		$params = array();
-		$productName = '';
-		$category = '';
-		$alias = '';
-		$paramId = -1;
-		$current = -1;
-		$first = true;
+		$numRows = mysql_num_rows($res);
+		if($numRows > 0){
+			$items = array();
+			$params = array();
+			$productName = '';
+			$category = '';
+			$alias = '';
+			$paramId = -1;
+			$current = -1;
+			$first = true;
 
-		while($row = mysql_fetch_array($res)){			
-			if($first){
-				$first = false;
-				$currentId = $row['id'];
+			while($row = mysql_fetch_array($res)){			
+				if($first){
+					$first = false;
+					$currentId = $row['id'];
+				}
+
+				if($currentId != $row['id']){
+					$currentId = $row['id'];
+					$items[] = array(
+						'id'=>$productId,
+						'productName'=>$productName,
+						'category'=>$category,
+						'alias'=>$alias,
+						'params'=>$params
+					);
+					$params = array();
+				}
+
+				$params[] = array(
+							'id'=>$row['ppId'],
+							'name'=>$row['name'],
+							'type'=>$row['type'],
+							'value'=>$row['value']
+							);
+				$productId = $row['id'];
+				$productName = $row['productName'];
+				$category = $row['category'];
+				$alias = $row['alias'];
+				$paramId = $row['ppId'];
 			}
-
-			if($currentId != $row['id']){
-				$currentId = $row['id'];
-				$items[] = array(
-					'id'=>$productId,
-					'productName'=>$productName,
-					'category'=>$category,
-					'alias'=>$alias,
-					'params'=>$params
-				);
-				$params = array();
-			}
-
-			$params[] = array(
-						'id'=>$row['ppId'],
-						'name'=>$row['name'],
-						'type'=>$row['type'],
-						'value'=>$row['value']
-						);
-			$productId = $row['id'];
-			$productName = $row['productName'];
-			$category = $row['category'];
-			$alias = $row['alias'];
-			$paramId = $row['ppId'];
+			$items[] = array(
+						'id'=>$productId,
+						'productName'=>$productName,
+						'category'=>$category,
+						'alias'=>$alias,
+						'params'=>$params
+					);
+		} else {
+			$items = array();
 		}
-		$items[] = array(
-					'id'=>$productId,
-					'productName'=>$productName,
-					'category'=>$category,
-					'alias'=>$alias,
-					'params'=>$params
-				);
 
 		if($request->param('reload', -1) == -1){
 			echo $twig->render('admin.html', array(
@@ -141,7 +146,7 @@
 		}	
 	});
 	$klein->respond('GET', '/admin/products/editParam/[:id]', function($request) use ($twig){
-		$query = "SELECT pp.value, param.name AS paramName, param.type
+		$query = "SELECT pp.value, param.id AS paramId
 		FROM productparams AS pp
 		LEFT JOIN categories AS c
 		ON pp.cat = c.id
@@ -151,12 +156,60 @@
 		$res = mysql_query($query);
 		$row = mysql_fetch_array($res);
 
+		$query = "SELECT p.id, p.name, p.type 
+				  FROM productparams AS pp
+				  LEFT JOIN categories AS c
+				  ON pp.cat = c.id
+				  LEFT JOIN params AS p
+				  ON c.param = p.id
+				  WHERE pp.id=".$request->id;
+		$res = mysql_query($query);
+		$params = array();
+		while($param = mysql_fetch_array($res)){
+			if($param['id'] == $row['paramId']){
+				$param['selected'] = 'true';
+			} else {
+				$param['selected'] = 'false';
+			}
+
+			$params[] = $param;
+		}
+
 		echo $twig->render('editParam.html', array(
-			'param'=>$row['paramName'],
+			'param'=>$row['paramId'],
 			'value'=>$row['value'],
-			'type'=>$row['type']
+			'params'=>$params
 			));
 	});
+	$klein->respond('GET', '/admin/products/addParam', function($request) use ($twig){
+
+		if($request->param('p', -1) == -1){
+			$query = "SELECT pm.id, pm.name, pm.type
+					  FROM products AS p
+					  LEFT JOIN productparams AS pp
+					  ON pp.product = p.id
+					  LEFT JOIN categories AS c
+					  ON pp.cat = c.id
+					  LEFT JOIN params AS pm
+					  ON c.param = pm.id
+					  WHERE p.id=".$request->param('id');
+			$res = mysql_query($query);
+
+			$rows = array();
+			if(mysql_num_rows($res) > 0){
+				while($row = mysql_fetch_array($res)){
+					$rows[] = $row;
+				}
+			}
+
+			echo $twig->render('editParam.html', array(
+				'params'=>$rows
+				));
+		} else {
+			$query = "INSERT INTO productparams (cat, value, product) VALUES ('', '', '')";
+		}
+	});
+
 	$klein->respond('GET', '/admin/products/addProduct', function($request) use ($twig){
 		if($request->param('pn', -1) == -1){
 			$query = 'SELECT name, alias FROM catnames';
@@ -322,6 +375,52 @@
 		echo $twig->render('adminCat.html', array(
 			'items'=>$cats
 			));	
+	});
+	$klein->respond('GET', '/admin/products/delParam', function($request){
+
+		$query = "SELECT pp.id
+				FROM productparams AS pp
+				WHERE pp.product IN 
+				(SELECT p.id
+				FROM productparams AS pp
+				LEFT JOIN products AS p
+				ON pp.product = p.id
+				WHERE pp.id=".$request->param('id').")";
+		$res = mysql_query($query);
+		if(mysql_num_rows($res) > 1){ //проверяем, что параметр не является последним
+			$query = "DELETE FROM productparams WHERE id=".$request->param('id');
+			$res = mysql_query($query);
+		}
+	});
+
+	$klein->respond('GET', '/admin/params', function($request) use ($twig){
+		
+		$query = "SELECT id, name, type FROM params";
+		$res = mysql_query($query);
+		$rows = array();
+		if(mysql_num_rows($res) > 0){
+			while($row = mysql_fetch_array($res)){
+				$rows[] = $row;
+			}
+		}
+
+		if($request->param('reload', -1) == -1){
+			echo $twig->render('adminParam.html', array('items'=>$rows));
+		} else {
+			echo $twig->render('adminParamReload.html', array('items'=>$rows));
+		}	
+	});
+	$klein->respond('GET', '/admin/params/addParam', function($request) use ($twig){
+
+		$name = $request->param('n', -1);
+		$type = $request->param('t', -1);
+
+		if($name == -1){
+			echo $twig->render('adminAddParam.html');
+		} else {
+			$query = "INSERT INTO params (name, type) VALUES ('".$name."', '".$type."')";
+			mysql_query($query);
+		}
 	});
 	$klein->dispatch();
 ?>

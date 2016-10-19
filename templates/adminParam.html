@@ -1,0 +1,31 @@
+{% extends 'extends/main.html' %}
+{% block main %}
+	<div clas="row">
+		<div class="col-md-2">
+			<ul class="nav nav-pills nav-stacked">
+				<li role="presentation"><a href="/admin">Продукты</a></li>
+				<li role="presentation"><a href="/admin/cats">Категории</a></li>
+				<li role="presentation"  class="active"><a href="/admin/params">Параметры</a></li>
+			</ul>
+		</div>
+		<div class="col-md-10 productsTable">
+			{% include 'adminParamReload.html' %}
+		</div>
+	</div>
+
+	<div id="paramsAddParam" class="modal fade" role='dialog'>
+		<div class="modal-dialog" role='document'>
+			<div class="modal-content">
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal' aria-lable='Закрыть'><span aria-hidden='true'>&times;</span></button>
+					<h4 class='modal-title'>Редактор параметра</h4>
+				</div>
+				<div id="paramsAddParamResult" class='modal-body'></div>
+				<div class='modal-footer'>
+					<button type='button' class='btn btn-default' data-dismiss='modal'>Закрыть</button>
+					<button type='button' class='btn btn-primary' id='paramsSubmitAddParam'>Сохранить</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

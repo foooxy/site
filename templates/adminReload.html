@@ -27,6 +27,8 @@
 							<td>{{param.value}}</td>
 							<td>{{param.type}}</td>
 							<td><button class="btn btn-info btn-sm" id='editParamBtn' type="button" data-toggle="modal" data-target="#editParam" name="edit" data-whatever='{{param.id}}' data-selected='false'>Редактировать</button></td>
+							<td><button class="btn btn-info btn-sm addParamBtn" type="button" data-toggle="modal" data-target="#addParam" name="addParam" data-selected="false" data-whatever='{{item.id}}'>Добавить</button></td>
+							<td><button class="btn btn-info btn-sm delParamBtn" type="button" name="delParam" data-whatever='{{param.id}}'>Удалить</button></td>
 						</tr>
 						{% endfor %}	
 					</thead>
