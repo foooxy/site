@@ -422,5 +422,20 @@
 			mysql_query($query);
 		}
 	});
+	$klein->respond('GET', '/admin/params/editParam', function($request) use ($twig){
+
+		$paramId = $request->param('id', -1);
+		$paramName = $request->param('n', '');
+		$paramType = $request->param('t', '');
+
+		if(empty($paramName) || empty($paramType)){
+			echo $twig->render('adminAddParam.html');
+		} else {
+			echo 1;
+			$query = "UPDATE params 
+					  SET name = , type = 
+					  WHERE id = ".$request->param('id');
+		}
+	});
 	$klein->dispatch();
 ?>

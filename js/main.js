@@ -181,4 +181,14 @@ $(document).ready(function(){
 			});
 		});
 	});
+	$('#paramsEditParam').on('shown.bs.modal', function(event){
+		var paramId = $(event.relatedTarget).data('whatever');
+		$(event.relatedTarget).attr('data-selected', 'true');
+		$.get('/admin/params/editParam?id=' + paramId, function(data){
+			$('#paramsEditParamResult').html(data);
+		});
+	});
+	$('#paramsSubmitEditParam').click(function(){
+		var paramId = 
+	});
 });
