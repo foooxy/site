@@ -328,53 +328,72 @@
 		echo $res;	
 	});
 
-	$klein->respond('GET', '/admin/cats', function() use ($twig){
-		$query = "SELECT cn.name AS cName, cn.alias, p.name AS pName, cn.id AS cId, p.id AS pId, p.type
-				  FROM categories AS c
-				  LEFT JOIN catnames AS cn
-				  ON c.cat = cn.id
-				  LEFT JOIN params AS p
-				  ON c.param = p.id
-				  ORDER BY cId";
-		$res = mysql_query($query);
-		$cats = array();
-		$params = array();
-		$currentId = -1;
-		$first = true;
+	$klein->respond('GET', '/admin/cats', function($request) use ($twig){
+		$reload = $request->param('reload', -1);
 
-		while($row = mysql_fetch_array($res)){
-			if($first){
-				$first = false;
-				$currentId = $row['cId'];
-			}
-			if($currentId != $row['cId']){
-				$currentId != $row['cId'];
-				$cats[] = array(
-					'id'=>$cId,
-					'name'=>$cName,
-					'alias'=>$cAlias,
-					'params'=>$params
+			$query = "SELECT cn.name AS cName, cn.alias, p.name AS pName, cn.id AS cId, p.id AS pId, p.type
+					  FROM categories AS c
+					  LEFT JOIN catnames AS cn
+					  ON c.cat = cn.id
+					  LEFT JOIN params AS p
+					  ON c.param = p.id
+					  ORDER BY cId";
+			$res = mysql_query($query);
+			$cats = array();
+			$params = array();
+			$currentId = -1;
+			$first = true;
+
+			while($row = mysql_fetch_array($res)){
+				if($first){
+					$first = false;
+					$currentId = $row['cId'];
+				}
+				if($currentId != $row['cId']){
+					$currentId != $row['cId'];
+					$cats[] = array(
+						'id'=>$cId,
+						'name'=>$cName,
+						'alias'=>$cAlias,
+						'params'=>$params
+						);
+					$params = array();
+				}
+				$params[] = array(
+						'id'=>$row['pId'],
+						'name'=>$row['pName'],
+						'alias'=>$row['type']
 					);
-				$params = array();
+				$cId = $row['cId'];
+				$cName = $row['cName'];
+				$cAlias = $row['alias'];
 			}
-			$params[] = array(
-					'id'=>$row['pId'],
-					'name'=>$row['pName'],
-					'alias'=>$row['type']
-				);
-			$cId = $row['cId'];
-			$cName = $row['cName'];
-			$cAlias = $row['alias'];
+			$cats[] = array(
+						'id'=>$cId,
+						'name'=>$cName,
+						'alias'=>$cAlias,
+						'params'=>$params
+						);
+			if ($reload == -1){
+				echo $twig->render('adminCat.html', array(
+					'items'=>$cats
+					));
+			} else {
+				echo $twig->render('adminCatReload.html', array(
+					'items'=>$cats
+					));
+			}	
+	});
+	$klein->respond('GET', '/admin/cats/addCat', function($request) use ($twig){
+		$catName = $request->param('n', '');
+		$catAlias = $request->param('a', '');
+
+		if(empty($catName) || empty($catAlias)){
+			echo $twig->render('adminAddCat.html');
+		} else {
+			$query = "INSERT INTO catnames (name, alias) VALUES ('".$catName."', '".$catAlias."')";
+			mysql_query($query);
 		}
-		$cats[] = array(
-					'id'=>$cId,
-					'name'=>$cName,
-					'alias'=>$cAlias,
-					'params'=>$params
-					);
-		echo $twig->render('adminCat.html', array(
-			'items'=>$cats
-			));	
 	});
 	$klein->respond('GET', '/admin/products/delParam', function($request){
 
@@ -429,13 +448,25 @@
 		$paramType = $request->param('t', '');
 
 		if(empty($paramName) || empty($paramType)){
-			echo $twig->render('adminAddParam.html');
+			$query = "SELECT name, type FROM params WHERE id = ".$paramId;
+			$res = mysql_query($query);
+			$row = mysql_fetch_array($res);
+
+			echo $twig->render('adminAddParam.html', array(
+				'name'=>$row['name'],
+				'type'=>$row['type']));
 		} else {
-			echo 1;
 			$query = "UPDATE params 
-					  SET name = , type = 
+					  SET name = '".$paramName."', type = '".$paramType."'
 					  WHERE id = ".$request->param('id');
+			$res = mysql_query($query);
 		}
+	});
+	$klein->respond('GET', '/admin/params/delParam', function($request){
+		$paramId = $request->param('id', -1);
+
+		$query = "DELETE FROM params WHERE id = ".$paramId;
+		mysql_query($query);
 	});
 	$klein->dispatch();
 ?>

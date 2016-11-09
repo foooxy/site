@@ -188,7 +188,59 @@ $(document).ready(function(){
 			$('#paramsEditParamResult').html(data);
 		});
 	});
+	$('#paramsEditParam').on('hidden.bs.modal', function(){
+		var button = $('#paramsEditParamBtn[data-selected = true]');
+		button.attr('data-selected', 'false');	
+	});
 	$('#paramsSubmitEditParam').click(function(){
-		var paramId = 
+		var paramId = $('#paramsEditParamBtn[data-selected = true]').data('whatever');
+		var param = $('#paramsEditParamResult #param').val();
+		var type = $('#paramsEditParamResult #type').val();
+		$('#paramsEditParam').modal('hide');
+		$.get('/admin/params/editParam?id=' + paramId
+			+ '&n=' + param
+			+ '&t=' + type, function(data){
+				$.ajax({
+					url: '/admin/params?reload=1',
+					cache: false,
+					success: function(data){
+						$('.productsTable').html(data);
+					}
+				});
+		});
+	});
+
+	$('#catsAddCat').on('shown.bs.modal', function(event){
+		$.get('/admin/cats/addCat', function(data){
+			$('#catsAddCatResult').html(data);
+		});
+	});
+	$('#catsSubmitAddCat').click(function(){
+		var catName = $('#catsAddCatResult #name').val();
+		var catAlias = $('#catsAddCatResult #alias').val();
+
+		$('#catsAddCat').modal('hide');
+		$.get('/admin/cats/addCat?n=' + catName
+			+ '&a=' + catAlias, function(){
+				$.ajax({
+					url: '/admin/cats?reload=1',
+					cache: false,
+					success: function(data){
+						$('.productsTable').html(data);
+					}
+				});
+		});
 	});
 });
+
+function paramsDelParam(id){
+	$.get('/admin/params/delParam?id=' + id, function(){
+		$.ajax({
+			url: '/admin/params?reload=1',
+			cache: false,
+			success: function(data){
+				$('.productsTable').html(data);
+			}
+		});
+	});	
+}

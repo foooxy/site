@@ -13,7 +13,7 @@
 			<td>{{item.name}}</td>
 			<td>{{item.type}}</td>
 			<td><button class="btn btn-info btn-sm" id='paramsEditParamBtn' type="button" data-toggle="modal" data-target="#paramsEditParam" name="edit" data-whatever='{{item.id}}' data-selected='false'>Редактировать</button></td>
-			<td><button class="btn btn-info btn-sm delProductBtn" type="button" name="delete" data-whatever='{{item.id}}'>Удалить</button></td>
+			<td><button class="btn btn-info btn-sm paramsDelParamBtn" type="button" name="delete" data-whatever='{{item.id}}' onclick="paramsDelParam({{item.id}})">Удалить</button></td>
 		</tr>
 	{% endfor %}
 	</tbody>
