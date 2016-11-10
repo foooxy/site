@@ -4,7 +4,7 @@
 		<tr>
 			<th>Категория</th>
 			<th>Алиас</th>
-			<th colspan="2">Управление</th>
+			<th colspan="3">Управление</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -12,18 +12,20 @@
 		<tr>
 			<td  data-toggle="collapse" data-target=".table{{item.id}}" class="accordion-toggle">{{item.name}}</td>
 			<td  data-toggle="collapse" data-target=".table{{item.id}}" class="accordion-toggle">{{item.alias}}</td>
-			<td><button class="btn btn-info btn-sm" id='editProductBtn' type="button" data-toggle="modal" data-target="#editProduct" name="edit" data-whatever='{{item.id}}' data-selected='false'>Редактировать</button></td>
-			<td><button class="btn btn-info btn-sm delProductBtn" type="button" name="delete" data-whatever='{{item.id}}'>Удалить</button></td>
+			<td><button class="btn btn-info btn-sm" id='catsEditCatBtn' type="button" data-toggle="modal" data-target="#catsEditCat" name="edit" data-whatever='{{item.id}}' data-selected='false'>Редактировать</button></td>
+			<td><button class="btn btn-info btn-sm catsDelCatBtn" type="button" name="delete" onclick="catsDelCat({{item.id}})"'>Удалить</button></td>
+			<td><button class="btn btn-info btn-sm" id='catsAddParamBtn' type="button" data-toggle="modal" data-target="#catsAddParam" name="add" data-whatever='{{item.id}}' data-selected='false'>Добавить параметр</button></td>
 		</tr>
 		<tr>
-			<td colspan="4" class="hiddenRow">
+			<td colspan="5" class="hiddenRow">
 				<table class="table table-striped">
 					<thead>
 						{% for param in item.params %}
 						<tr class="accordion-body collapse table{{item.id}}">
 							<td>{{param.name}}</td>
 							<td>{{param.alias}}</td>
-							<td><button class="btn btn-info btn-sm" id='editParamBtn' type="button" data-toggle="modal" data-target="#editParam" name="edit" data-whatever='{{param.id}}' data-selected='false'>Редактировать</button></td>
+							<td><button class="btn btn-info btn-sm" id='catsEditParamBtn' type="button" data-toggle="modal" data-target="#catsEditParam" name="edit" data-whatever='{{param.pid}}' data-catid='{{item.catId}}' data-cid='{{item.id}}' data-selected='false'>Редактировать</button></td>
+							<td><button class="btn btn-info btn-sm catsDelParamBtn" type="button" name="delete" onclick="catsDelParam({{item.id}}, {{param.pid}})"'>Удалить</button></td>
 						</tr>
 						{% endfor %}	
 					</thead>

@@ -1,0 +1,8 @@
+<div class='form-group'>
+	<lable for='param'>Параметр:</lable>
+	<select class='form-control' id='param'>
+	{% for param in params %}
+		<option value='{{param.id}}' {% if param.selected %} selected {% endif %}>{{param.name}} ({{param.type}})</option>
+	{% endfor %}
+	</select>
+</div>
