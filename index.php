@@ -15,7 +15,7 @@
 	$klein->respond('GET', '/', function() use ($twig){
 		$query = "SELECT name, alias 
 				FROM catnames
-				WHERE parent IS NULL";
+				WHERE parent IS NULL OR parent = '-1'";
 		$res = mysql_query($query);
 		while ($row = mysql_fetch_array($res)){
 			$rows[] = $row;
@@ -39,7 +39,8 @@
 
 		$items = array();
 		if(!isset($children)){
-			$query = "SELECT p.name, p.alias FROM products AS p
+			$query = "SELECT p.name, p.alias 
+					  FROM products AS p
 					  LEFT JOIN productparams AS pp
 					  ON pp.product = p.id
 					  LEFT JOIN categories AS cat 
@@ -49,10 +50,12 @@
 					  WHERE catn.id = ".$cat['id'];
 			$res = mysql_query($query);
 			while($item = mysql_fetch_array($res)){
-				$items[] = $item;
+				if(!in_array($item, $items)){
+					$items[] = $item;
+				}
 			}
 		}
-		
+
 		echo $twig->render('category.html', array(
 			'title'=>$cat['name'],
 			'name'=>$cat['name'],
@@ -81,7 +84,7 @@
 	});
 
 	$klein->respond('GET', '/admin', function($request) use ($twig){
-		$query = "SELECT pp.value, p.name AS pName, p.alias AS pAlias, cn.name AS cName, pr.name AS prName, pr.type, p.id AS pid, pr.id AS prId
+		$query = "SELECT pp.value, p.name AS pName, p.alias AS pAlias, cn.name AS cName, pr.name AS prName, pr.type, p.id AS pid, pr.id AS prId, pp.id AS ppId
 		FROM products AS p
 		LEFT JOIN productparams AS pp
 		ON pp.product = p.id
@@ -117,6 +120,7 @@
 			}
 			$params[] = array(
 				'id'=>$row['prId'],
+				'ppid'=>$row['ppId'],
 				'name'=>$row['prName'],
 				'type'=>$row['type'],
 				'value'=>$row['value']
@@ -140,43 +144,30 @@
 				));
 		}	
 	});
-	$klein->respond('GET', '/admin/products/editParam/[:id]', function($request) use ($twig){
-		$query = "SELECT pp.value, param.id AS paramId
-		FROM productparams AS pp
-		LEFT JOIN categories AS c
-		ON pp.cat = c.id
-		LEFT JOIN params AS param
-		ON c.param = param.id
-		LEFT JOIN products AS p
-		ON pp.product = p.id
-		WHERE p.id=".$request->id;
-		$res = mysql_query($query);
-		$row = mysql_fetch_array($res);
+	$klein->respond('GET', '/admin/products/editParam', function($request) use ($twig){
+		$ppid = $request->param('id', -1);
+		$value = $request->param('v', -1);
 
-		$query = "SELECT p.id, p.name, p.type 
-				  FROM productparams AS pp
-				  LEFT JOIN categories AS c
-				  ON pp.cat = c.id
-				  LEFT JOIN params AS p
-				  ON c.param = p.id
-				  WHERE pp.id=".$request->id;
-		$res = mysql_query($query);
-		$params = array();
-		while($param = mysql_fetch_array($res)){
-			if($param['id'] == $row['paramId']){
-				$param['selected'] = 'true';
-			} else {
-				$param['selected'] = 'false';
-			}
+		if($value == -1){
+			$query = "SELECT pp.value, pr.name, pr.type 
+					  FROM productparams AS pp
+					  LEFT JOIN categories AS c
+					  ON pp.cat = c.id
+					  LEFT JOIN params AS pr
+					  ON c.param = pr.id 
+					  WHERE pp.id = ".$ppid;
+			$res = mysql_query($query);
+			$row = mysql_fetch_array($res);		
 
-			$params[] = $param;
+			echo $twig->render('editParam.html', array(
+				'param'=>$row['name'],
+				'value'=>$row['value'],
+				'type'=>$row['type']
+				));
+		} else {
+			$query = "UPDATE productparams SET value = '".$value."' WHERE id = ".$ppid.";";
+			mysql_query($query);
 		}
-
-		echo $twig->render('editParam.html', array(
-			'param'=>$row['paramId'],
-			'value'=>$row['value'],
-			'params'=>$params
-			));
 	});
 	$klein->respond('GET', '/admin/products/addParam', function($request) use ($twig){
 
@@ -269,20 +260,28 @@
 	});
 
 	$klein->respond('GET', '/admin/products/editProduct', function($request) use ($twig){
-		if($request->param('pn', -1) == -1){
-			$query = "SELECT p.name AS productName, p.alias, cn.alias AS catAlias 
-			FROM productparams AS pp
-			LEFT JOIN products AS p
-			ON pp.product = p.id
-			LEFT JOIN categories AS c
-			ON pp.cat = c.id
-			LEFT JOIN catnames AS cn
-			ON c.cat = cn.id
-			WHERE pp.id=".$request->param('id', -1);
+		$pid = $request->param('id', -1);
+		$pName = $request->param('pn', '');
+		$alias = $request->param('a', '');
+		$cat = $request->param('c', -1);
+
+
+		if(empty($pName)){
+			$query = "SELECT p.name, p.alias, cn.name AS cat, cn.alias AS catAlias
+					  FROM products AS p
+					  LEFT JOIN productparams AS pp
+					  ON pp.product = p.id
+					  LEFT JOIN categories AS c
+					  ON pp.cat = c.id
+					  LEFT JOIN catnames AS cn
+					  ON c.cat = cn.id
+					  WHERE p.id = ".$pid."
+					  LIMIT 1";
+
 			$res = mysql_query($query);
 			$row = mysql_fetch_array($res);
 			
-			$query = 'SELECT name, alias FROM catnames';
+			$query = 'SELECT id, name, alias FROM catnames';
 			$res = mysql_query($query);
 			while($cat = mysql_fetch_array($res)){
 				if($cat['alias'] == $row['catAlias']){
@@ -294,37 +293,43 @@
 			}
 
 			echo $twig->render('editProduct.html', array(
-				'productName'=>$row['productName'],
+				'productName'=>$row['name'],
 				'alias'=>$row['alias'],
 				'cats'=>$cats
 				));
 		} else {
-			$query = "SELECT c.id 
-			FROM categories AS c
-			LEFT JOIN catnames AS cn
-			ON c.cat = cn.id 
-			WHERE cn.alias='".$request->param('c')."'";
+			$query = "UPDATE products SET name = '".$pName."', alias = '".$alias."' WHERE id = ".$pid;
+			mysql_query($query);
+
+			// проверяем, что изменилась категория
+			$query = "SELECT c.cat 
+					  FROM products AS p
+					  LEFT JOIN productparams AS pp
+					  ON pp.product = p.id
+					  LEFT JOIN categories AS c
+					  ON pp.cat = c.id
+					  WHERE p.id = ".$pid."
+					  LIMIT 1";
 			$res = mysql_query($query);
-			$cat = mysql_fetch_array($res);
-			$query = "UPDATE productparams AS pp, products AS p
-			SET p.name='".$request->param('pn')."', p.alias='".$request->param('a')."', pp.cat='".$cat['id']."' 
-			WHERE p.id = pp.product AND pp.id=".$request->param('id', -1);
-			$res = mysql_query($query);
-			echo $res;
+			$row = mysql_fetch_array($res);
+
+			if ($row['cat'] != $cat){
+				$query = "DELETE FROM productparams
+						  WHERE product = ".$pid;
+				mysql_query($query);
+
+				$query = "INSERT INTO productparams (cat, product, value) 
+					SELECT id, '".$pid."', '0'
+					FROM categories
+					WHERE cat = '".$cat."'";
+				mysql_query($query);
+			}
 		}
-	});
-	$klein->respond('GET', '/admin/products/editParam', function($request) use ($twig){
-		$id = $request->param('id');
-		$value = $request->param('v');
-		
-		$query = "UPDATE productparams SET value = '".$value."'";
-		$res = mysql_query($query);
-		echo $res;	
 	});
 
 	$klein->respond('GET', '/admin/cats', function($request) use ($twig){
 		$reload = $request->param('reload', -1);
-			$query = "SELECT cn.name AS cName, cn.alias, p.name AS pName, cn.id AS cId, p.id AS pId, p.type, c.id AS catId
+			$query = "SELECT cn.name AS cName, cn.alias, p.name AS pName, cn.id AS cId, p.id AS pId, p.type, c.id AS catId, cn.parent AS catPar
 				FROM catnames AS cn
 				LEFT JOIN categories AS c
 				ON c.cat = cn.id
@@ -344,14 +349,20 @@
 						$cats[] = array(
 							'id'=>$curId,
 							'catId'=>$catId,
+							'catPar'=>$catPar,
 							'name'=>$cName,
 							'alias'=>$cAlias,
 							'params'=>$params
 							);
 						$params = array();
 					}
+					$query = "SELECT name FROM catnames WHERE id = ".$row['catPar'];
+					$result = mysql_query($query);
+					$resPar = mysql_fetch_array($result);
+
 					$curId = $row['cId'];
 					$catId = $row['catId'];
+					$catPar = $resPar['name'];
 					$cName = $row['cName'];
 					$cAlias = $row['alias'];
 				}
@@ -364,6 +375,7 @@
 			$cats[] = array(
 				'id'=>$curId,
 				'catId'=>$catId,
+				'catPar'=>$catPar,
 				'name'=>$cName,
 				'alias'=>$cAlias,
 				'params'=>$params
@@ -382,11 +394,26 @@
 	$klein->respond('GET', '/admin/cats/addCat', function($request) use ($twig){
 		$catName = $request->param('n', '');
 		$catAlias = $request->param('a', '');
+		$parent = $request->param('p', -1);
+		if(empty($parent)){
+			$parent = -1;
+		}
 
 		if(empty($catName) || empty($catAlias)){
-			echo $twig->render('adminAddCat.html');
+			$query = "SELECT id, name FROM catnames";
+			$res = mysql_query($query);
+			$parents = array();
+			while($row = mysql_fetch_array($res)){
+				$parents[] = array(
+					'id'=>$row['id'],
+					'name'=>$row['name'],
+					'selected'=>false
+					);
+			}
+			echo $twig->render('adminAddCat.html', array('parents'=>$parents));
 		} else {
-			$query = "INSERT INTO catnames (name, alias) VALUES ('".$catName."', '".$catAlias."')";
+			$query = "INSERT INTO catnames (name, alias, parent) VALUES ('".$catName."', '".$catAlias."', '".$parent."')";
+			echo $query;
 			mysql_query($query);
 		}
 	});
@@ -402,19 +429,49 @@
 		$id = $request->param('id', -1);
 		$name = $request->param('n', '');
 		$alias = $request->param('a', '');
+		$parent = $request->param('p', -1);
+		if (empty($parent)){
+			$parent = -1;
+		}
 
 		if(empty($name) || empty($alias)){
-			$query = "SELECT name, alias FROM catnames WHERE id = ".$id;
+			$query = "SELECT parent FROM catnames WHERE id = ".$id;
 			$res = mysql_query($query);
-			$row = mysql_fetch_array($res);
+			$sp = mysql_fetch_array($res);
+
+			$query = "SELECT * FROM catnames";
+			$res = mysql_query($query);
+			$name = '';
+			$alias = '';
+			$parents = '';
+			while($row = mysql_fetch_array($res)){
+				if($row['id'] != $id){
+					if($sp['parent'] == $row['id']){
+						$parents[] = array(
+						'id'=>$row['id'],
+						'name'=>$row['name'],
+						'selected'=>true);
+					} else {
+						$parents[] = array(
+						'id'=>$row['id'],
+						'name'=>$row['name'],
+						'selected'=>false);	
+					}
+				} else {
+					$name = $row['name'];
+					$alias = $row['alias'];
+				}
+
+			}
 
 			echo $twig->render('adminAddCat.html', array(
-				'name'=>$row['name'],
-				'alias'=>$row['alias']
+				'name'=>$name,
+				'alias'=>$alias,
+				'parents'=>$parents
 				));
 		} else {
 			$query = "UPDATE catnames
-					  SET name = '".$name."', alias = '".$alias."'
+					  SET name = '".$name."', alias = '".$alias."', parent = '".$parent."'
 					  WHERE id = ".$id;
 			mysql_query($query);
 		}

@@ -6,3 +6,12 @@
 	<lable for='type'>Алиас:</lable>
 	<input type='text' class='form-control' id='alias' value="{{ alias }}">
 </div>
+<div class='form-group'>
+	<lable for='parent'>Родитель:</lable>
+	<select class='form-control' id='parent'>
+		<option value=''></option>
+	{% for parent in parents %}
+		<option value='{{ parent.id }}' {% if parent.selected %} selected {% endif %}>{{ parent.name }}
+	{% endfor %}
+	</select>
+</div>

@@ -12,16 +12,13 @@ $(document).ready(function(){
 			+ '&a=' + alias
 			+ '&c=' + category,
 		function(data){
-			alert('/admin/products/addProduct?pn=' + productName + '&a=' + alias + '&c=' + category);
-			if(data > 0){
-				$.ajax({
-					url: '/admin?reload=1',
-					cached: false,
-					success: function(data){
-						$('.productsTable').html(data);
-					}
-				});
-			}
+			$.ajax({
+				url: '/admin?reload=1',
+				cached: false,
+				success: function(data){
+					$('.productsTable').html(data);
+				}
+			});
 			$('#addProduct').modal('hide');
 		});
 	});
@@ -61,27 +58,23 @@ $(document).ready(function(){
 			+ '&a=' + alias
 			+ '&c=' + category,
 		function(data){
-			if(data > 0){
-				$.ajax({
-					url: '/admin?reload=1',
-					cache: false,
-					success: function(data){
-						$('.productsTable').html(data);
-					}
-				});	
-			}
+			$.ajax({
+				url: '/admin?reload=1',
+				cache: false,
+				success: function(data){
+					$('.productsTable').html(data);
+				}
+			});	
 			$('#editProduct').modal('hide');
 		});
 	});
 
 	$('#editParam').on('shown.bs.modal', function(event){
 		var button = $(event.relatedTarget);
-		var id = button.data('whatever');
+		var ppid = button.data('whatever');
 		button.attr('data-selected', 'true');
-		$.get('/admin/products/editParam/' + id, function(data){
+		$.get('/admin/products/editParam?id=' + ppid, function(data){
 			$('#paramResult').html(data);
-			var type = $('#paramResult #param option:selected').data('type');
-			$('#paramResult #type').val(type);
 		});
 	});
 	$('#editParam').on('hidden.bs.modal', function(event){
@@ -89,25 +82,18 @@ $(document).ready(function(){
 		button.attr('data-selected', 'false');
 	});
 	$('#submitParam').click(function(e){
-		var id = $('#editParamBtn[data-selected = true]').data('whatever');
-		var param = $('#paramResult #param').val();
+		var ppid = $('#editParamBtn[data-selected = true]').data('whatever');
 		var value = $('#paramResult #value').val();
-		var type = $('#paramResult #type').val();
 
-		$.get('/admin/products/editParam?id=' + id
-			+ '&p=' + param
-			+ '&v=' + value
-			+ '&t=' + type,
+		$.get('/admin/products/editParam?id=' + ppid + '&v=' + value,
 		function(data){
-			if(data > 0){
-				$.ajax({
-					url: '/admin?reload=1',
-					cache: false,
-					success: function(data){
-						$('.productsTable').html(data);
-					}
-				});
-			}
+			$.ajax({
+				url: '/admin?reload=1',
+				cache: false,
+				success: function(data){
+					$('.productsTable').html(data);
+				}
+			});
 			$('#editParam').modal('hide');	
 		});
 	});
@@ -219,10 +205,13 @@ $(document).ready(function(){
 	$('#catsSubmitAddCat').click(function(){
 		var catName = $('#catsAddCatResult #name').val();
 		var catAlias = $('#catsAddCatResult #alias').val();
+		var parent = $('#catsAddCatResult #parent').val();
 
 		$('#catsAddCat').modal('hide');
 		$.get('/admin/cats/addCat?n=' + catName
-			+ '&a=' + catAlias, function(){
+			+ '&a=' + catAlias
+			+ '&p=' + parent,
+			 function(){
 				$.ajax({
 					url: '/admin/cats?reload=1',
 					cache: false,
@@ -247,11 +236,14 @@ $(document).ready(function(){
 		var id = $('#catsEditCatBtn[data-selected = true]').data('whatever');
 		var name = $('#catsEditCat #name').val();
 		var alias = $('#catsEditCat #alias').val();
+		var parent = $('#catsEditCat #parent').val();
 
 		$('#catsEditCat').modal('hide');
 		$.get('/admin/cats/editCat?id=' + id
 			+ '&n=' + name
-			+ '&a=' + alias, function(){
+			+ '&a=' + alias
+			+ '&p=' + parent, 
+			function(){
 				$.ajax({
 					url: '/admin/cats?reload=1',
 					cache: false,
