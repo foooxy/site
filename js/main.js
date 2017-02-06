@@ -310,6 +310,23 @@ $(document).ready(function(){
 		});
 	});
 
+	$('#filters-form').submit(function(e){
+		console.log($('#filters-form').serialize());
+		$.ajax({
+			type: 'post',
+			url: '/filters',
+			data: $('#filters-form').serialize(),
+			success: function(data){
+				console.log(data);
+			}
+		});
+		e.preventDefault();
+	});
+
+	$('.filter').change(function(){
+		$('#filters-form').submit();
+	});
+
 });
 
 function paramsDelParam(id){

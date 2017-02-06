@@ -38,6 +38,7 @@
 		}
 
 		$items = array();
+		$filters = array();
 		if(!isset($children)){
 			$query = "SELECT p.name, p.alias 
 					  FROM products AS p
@@ -54,13 +55,26 @@
 					$items[] = $item;
 				}
 			}
+
+			$query = "SELECT p.id, p.name, p.alias 
+			FROM catnames AS cn
+			LEFT JOIN categories AS c
+			ON cn.id = c.cat
+			LEFT JOIN params AS p
+			ON c.param = p.id
+			WHERE alias = '".$request->catname."'";
+			$res = mysql_query($query);
+			while($item = mysql_fetch_array($res)){
+				$filters[] = $item;	
+			}
 		}
 
 		echo $twig->render('category.html', array(
 			'title'=>$cat['name'],
 			'name'=>$cat['name'],
 			'children'=>$children,
-			'items'=>$items));
+			'items'=>$items,
+			'filters'=>$filters));
 	});
 	$klein->respond('GET', '/items/[:item]', function($request) use ($twig){
 		$query = "SELECT p.name AS productName, params.name, params.type, pp.value FROM products AS p
@@ -612,6 +626,24 @@
 
 		$query = "DELETE FROM params WHERE id = ".$paramId;
 		mysql_query($query);
+	});
+	$klein->respond('GET', '/search', function($request) use ($twig){
+		$searchText = $request->param('text');
+		$query = "SELECT * FROM products 
+		WHERE name LIKE '%".$searchText."%'
+		OR alias LIKE '%".$searchText."%'
+		";
+		$res = mysql_query($query);
+		$rows = array();
+		while($row = mysql_fetch_array($res)){
+			$rows[] = $row;	
+		}
+		echo $twig->render('search.html', array('res'=>$rows));
+	});
+	$klein->respond('POST', '/filters', function($request){
+		foreach ($request->params() as $key => $value) {
+				
+		}
 	});
 	$klein->respond('GET', '/free', function(){
 		$query = 'INSERT INTO productparams (value, cat, product) values ("0.1", "20", "10")';

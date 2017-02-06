@@ -1,6 +1,23 @@
 {% extends 'extends/main.html' %}
 {% block main %}
-	<div class="container">
+	<div class="container-fluid">
+		{% if filters|length > 0 %}
+		<div class="col-md-3">
+			<form id='filters-form'>
+			<ul class="list-group">
+			{% for filter in filters %}	
+				<li class="list-group-item">
+					<div class="form-group">
+    					<label class="sr-only" for="filter{{filter.id}}">{{filter.name}}</label>
+    					<input type="text" class="form-control filter" id="filter{{filter.id}}" placeholder="{{filter.name}}" title="{{filter.name}}" name="{{filter.alias}}">
+ 					 </div>	
+				</li>
+			{% endfor %}
+			</ul>
+			</form>
+		</div>
+		<div class="col-md-9">
+		{% endif %}
 		<div class="page-header">
 			<h3>{{name}}</h3>
 		</div>
@@ -34,6 +51,9 @@
 				{% endfor %}
 			{% endif %}
 			</ul>
+		{% endif %}
+		{% if filters|length > 0 %}
+		</div>
 		{% endif %}
 	</div>
 {% endblock %}

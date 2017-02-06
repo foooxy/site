@@ -21,6 +21,12 @@
 					<li class="active"><a href="#">Link</a></li>
 					<li><a href="/admin">Админка</a></li>
 				</ul>
+				<form action='/search' class="navbar-form navbar-right">
+        			<div class="form-group">
+          				<input type="text" class="form-control" placeholder="Search" name='text'>
+        			</div>
+        			<button type="submit" class="btn btn-default">Submit</button>
+      			</form>
 			</div>
 		</nav>
 		{% block main %}{% endblock %}
